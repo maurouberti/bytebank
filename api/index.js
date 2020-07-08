@@ -5,7 +5,7 @@ var db = new sqlite3.Database('./database.db');
 // db.run("DROP TABLE if exists transacoes");
 // db.run("DROP TABLE if exists contatos");
 db.run("CREATE TABLE if not exists contatos (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, numero_conta INTEGER UNIQUE)");
-db.run("CREATE TABLE if not exists transacoes (id INTEGER PRIMARY KEY AUTOINCREMENT, valor DOUBLE, contato INTEGER)");
+db.run("CREATE TABLE if not exists transacoes (uuid TEXT PRIMARY KEY, valor DOUBLE, contato INTEGER)");
 
 const host = 'localhost';
 const port = 3000;
@@ -45,7 +45,9 @@ const server = http.createServer((req, res) => {
             return res.writeHead(200).end(JSON.stringify(response));
         });
     } else if (objUrl.pathname == '/transacao' && req.method == 'POST') {
-        // {"valor":123.0,"contato":{"nome":"Mauro","numero_conta":1000}}
+        if (req.headers.password != 1000) {
+            return res.writeHead(401).end('erro');
+        }
 
         var body = '';
         req.on('data', function (data) {
@@ -60,16 +62,26 @@ const server = http.createServer((req, res) => {
         });
         req.on('end', function () {
             var jsonPost = JSON.parse(body);
-            db.run('INSERT OR IGNORE INTO contatos (nome, numero_conta) VALUES (?, ?)', [jsonPost.contato.nome, jsonPost.contato.numero_conta]);
-            db.get('SELECT id FROM contatos WHERE numero_conta = ?', [jsonPost.contato.numero_conta], (err, row) => {
-                if (err) return res.writeHead(500).end('erro');
-                db.run(
-                    'INSERT INTO transacoes (valor, contato) VALUES (?, ?)', 
-                    [jsonPost.valor, row.id],
-                    (err) => {
-                        if (err) return res.writeHead(500).end('erro');
-                        return res.writeHead(201).end();
-                    });
+            if (jsonPost.valor <= 0) {
+                console.log('valor inválido');
+                return res.writeHead(422).end('valor inválido');
+            }
+            db.get('SELECT uuid FROM transacoes WHERE uuid = ?', [jsonPost.uuid], (err, row) => {
+                if (err) return res.writeHead(400).end('erro');
+                console.log(row);
+                if (row) return res.writeHead(409).end('transacao ja existe');
+                db.run('INSERT OR IGNORE INTO contatos (nome, numero_conta) VALUES (?, ?)', [jsonPost.contato.nome, jsonPost.contato.numero_conta]);
+                db.get('SELECT id FROM contatos WHERE numero_conta = ?', [jsonPost.contato.numero_conta], (err, row) => {
+                    if (err) return res.writeHead(400).end('erro');
+                    db.run(
+                        'INSERT INTO transacoes (uuid, valor, contato) VALUES (?, ?, ?)', 
+                        [jsonPost.uuid, jsonPost.valor, row.id],
+                        (err) => {
+                            if (err) return res.writeHead(400).end('erro');
+                            console.log('gravado', jsonPost.valor, row.id);
+                            return res.writeHead(201).end();
+                        });
+                });
             });
         });
 
