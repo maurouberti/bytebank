@@ -19,4 +19,15 @@ class Contato {
         'nome': nome,
         'numero_conta': numeroConta,
       };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Contato &&
+          runtimeType == other.runtimeType &&
+          nome == other.nome &&
+          numeroConta == other.numeroConta;
+
+  @override
+  int get hashCode => nome.hashCode ^ numeroConta.hashCode;
 }

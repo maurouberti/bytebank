@@ -3,51 +3,61 @@ import 'package:bytebank/screens/transacoes/lista.dart';
 import 'package:flutter/material.dart';
 
 class Menu extends StatefulWidget {
+
   @override
   _MenuState createState() => _MenuState();
 }
 
 class _MenuState extends State<Menu> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8.0, 40.0, 8.0, 8.0),
-            child: Image.asset('images/bytebank_logo.png'),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
+      body: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                _BotaoMenu(
-                  textoBotao: 'Transações',
-                  icone: Icons.description,
-                  onClick: (context) => ListaTransacoes(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8.0, 40.0, 8.0, 8.0),
+                  child: Image.asset('images/bytebank_logo.png'),
                 ),
-                _BotaoMenu(
-                  textoBotao: 'Contatos',
-                  icone: Icons.people,
-                  onClick: (context) => ListaContatos(),
-                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: <Widget>[
+                      BotaoMenu(
+                        textoBotao: 'Transações',
+                        icone: Icons.description,
+                        onClick: (context) => ListaTransacoes(),
+                      ),
+                      BotaoMenu(
+                        textoBotao: 'Contatos',
+                        icone: Icons.people,
+                        onClick: (context) =>
+                            ListaContatos(),
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
-          )
-        ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _BotaoMenu extends StatelessWidget {
+class BotaoMenu extends StatelessWidget {
   final String textoBotao;
   final Function(BuildContext) onClick;
   final IconData icone;
 
-  const _BotaoMenu(
+  const BotaoMenu(
       {Key key, this.textoBotao, @required this.onClick, this.icone})
       : super(key: key);
 
@@ -79,7 +89,7 @@ class _BotaoMenu extends StatelessWidget {
                 Text(
                   textoBotao,
                   style: TextStyle(
-                    color: Theme.of(context).primaryTextTheme.body1.color,
+                    color: Theme.of(context).primaryTextTheme.bodyText1.color,
                     fontSize: 16.0,
                   ),
                 )

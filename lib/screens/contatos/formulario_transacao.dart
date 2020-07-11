@@ -5,6 +5,7 @@ import 'package:bytebank/components/transacao_auth_dialog.dart';
 import 'package:bytebank/http/webclients/transacao_webclient.dart';
 import 'package:bytebank/models/contato.dart';
 import 'package:bytebank/models/transacao.dart';
+import 'package:bytebank/widgets/app_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -28,12 +29,12 @@ class FormularioTransacao extends StatefulWidget {
 
 class FormularioTransacaoState extends State<FormularioTransacao> {
   final TextEditingController _controladorValor = TextEditingController();
-  final TransacaoWebClient _webClient = TransacaoWebClient();
   final String uuid = Uuid().v4();
   bool _enviando = false;
 
   @override
   Widget build(BuildContext context) {
+    final dependencies = AppDependencies.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(_tituloAppBar)),
       body: ListView(
@@ -75,7 +76,7 @@ class FormularioTransacaoState extends State<FormularioTransacao> {
                   builder: (contextDialog) {
                     return TransacaoAuthDialog(
                       onConfirm: (String password) {
-                        _salvar(transacaoCriada, password, context);
+                        _salvar(dependencies.transacaoWebClient, transacaoCriada, password, context);
                       },
                     );
                   });
@@ -87,6 +88,7 @@ class FormularioTransacaoState extends State<FormularioTransacao> {
   }
 
   void _salvar(
+    TransacaoWebClient webClient,
     Transacao transacaoCriada,
     String password,
     BuildContext context,
@@ -94,7 +96,7 @@ class FormularioTransacaoState extends State<FormularioTransacao> {
     setState(() => _enviando = true);
 
     final statusCode =
-        await _webClient.save(transacaoCriada, password).catchError((err) {
+        await webClient.save(transacaoCriada, password).catchError((err) {
       _showErro(context, mensagem: err.message);
     }, test: (err) => err is MyHttpException).catchError((err) {
       _showErro(context, mensagem: 'Tempo excedido.');

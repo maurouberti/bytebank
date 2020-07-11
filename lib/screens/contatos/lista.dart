@@ -1,21 +1,25 @@
-import 'package:bytebank/database/dao/contato_dao.dart';
 import 'package:bytebank/models/contato.dart';
 import 'package:bytebank/screens/contatos/formulario.dart';
 import 'package:bytebank/screens/contatos/formulario_transacao.dart';
+import 'package:bytebank/widgets/app_dependencies.dart';
 import 'package:flutter/material.dart';
 
 const _tituloAppBar = 'Contatos';
 
-class ListaContatos extends StatelessWidget {
-  final ContatoDao _dao = ContatoDao();
+class ListaContatos extends StatefulWidget {
+  @override
+  _ListaContatosState createState() => _ListaContatosState();
+}
 
+class _ListaContatosState extends State<ListaContatos> {
   @override
   Widget build(BuildContext context) {
+    final dependencies = AppDependencies.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(_tituloAppBar)),
       body: FutureBuilder<List<Contato>>(
         initialData: List(),
-        future: _dao.findAll(),
+        future: dependencies.contatoDao.findAll(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -31,7 +35,7 @@ class ListaContatos extends StatelessWidget {
                 itemCount: contatos.length,
                 itemBuilder: (context, indice) {
                   final Contato contato = contatos[indice];
-                  return _ItemContato(contato, onClick: () {
+                  return ItemContato(contato, onClick: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => FormularioTransacao(contato)));
                   });
@@ -56,11 +60,11 @@ class ListaContatos extends StatelessWidget {
   }
 }
 
-class _ItemContato extends StatelessWidget {
+class ItemContato extends StatelessWidget {
   final Contato contato;
   final Function onClick;
 
-  const _ItemContato(this.contato, {@required this.onClick});
+  const ItemContato(this.contato, {@required this.onClick});
 
   @override
   Widget build(BuildContext context) {
